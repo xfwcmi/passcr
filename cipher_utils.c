@@ -53,8 +53,11 @@ char *encrypt(const char *plaintext, const char *master_password)
     unsigned char key[32];
     unsigned char tag[16];
 
+    // generate random bytes to salt and iv
     RAND_bytes(salt, sizeof(salt));
     RAND_bytes(iv, sizeof(iv));
+
+    // derive the key from the master password and salt
     derive_key(master_password, salt, key);
 
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
@@ -65,8 +68,7 @@ char *encrypt(const char *plaintext, const char *master_password)
     size_t pt_len = strlen(plaintext);
     unsigned char *ciphertext = malloc(pt_len);
     int outlen;
-    EVP_EncryptUpdate(ctx, ciphertext, &outlen,
-                      (unsigned char *)plaintext, pt_len);
+    EVP_EncryptUpdate(ctx, ciphertext, &outlen, (unsigned char *) plaintext, pt_len);
     EVP_EncryptFinal_ex(ctx, ciphertext + outlen, &outlen);
     EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, tag);
 
